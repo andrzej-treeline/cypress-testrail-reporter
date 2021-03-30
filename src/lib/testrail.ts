@@ -44,7 +44,7 @@ export class TestRail {
       },
     })
       .then(response => {
-        const run = response.data.runs.find(run => run.description && run.description.indexOf(key) >= 0);
+        const run = (response.data.runs || response.data).find(run => run.description && run.description.indexOf(key) >= 0);
         if (run) {
           this.runId = run.id;
           return;

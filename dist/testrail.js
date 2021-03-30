@@ -78,7 +78,7 @@ var TestRail = /** @class */ (function () {
                     },
                 })
                     .then(function (response) {
-                    var run = response.data.runs.find(function (run) { return run.description && run.description.indexOf(key) >= 0; });
+                    var run = (response.data.runs || response.data).find(function (run) { return run.description && run.description.indexOf(key) >= 0; });
                     if (run) {
                         _this.runId = run.id;
                         return;
