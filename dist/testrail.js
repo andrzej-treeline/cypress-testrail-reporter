@@ -64,6 +64,32 @@ var TestRail = /** @class */ (function () {
             .then(function (response) { return response.data.map(function (item) { return item.id; }); })
             .catch(function (error) { return console.error(error); });
     };
+    TestRail.prototype.getRun = function (name, description, key) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                axios({
+                    method: 'get',
+                    url: this.base + "/get_runs/" + this.options.projectId,
+                    headers: { 'Content-Type': 'application/json' },
+                    auth: {
+                        username: this.options.username,
+                        password: this.options.password,
+                    },
+                })
+                    .then(function (response) {
+                    var run = response.data.runs.find(function (run) { return run.description && run.description.indexOf(key) >= 0; });
+                    if (run) {
+                        _this.runId = run.id;
+                        return;
+                    }
+                    return _this.createRun(name, description);
+                })
+                    .catch(function (error) { return console.error(error); });
+                return [2 /*return*/];
+            });
+        });
+    };
     TestRail.prototype.createRun = function (name, description) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;

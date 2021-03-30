@@ -5,6 +5,27 @@ import { titleToCaseIds } from './shared';
 import { Status, TestRailResult } from './testrail.interface';
 const chalk = require('chalk');
 
+const createKey = () => {
+  if (!process.env.CI) {
+    return `[${process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')}]`;
+  }
+  return `[${process.env.CIRCLE_BUILD_URL}]`;
+}
+
+const createDescription = () => {
+  if (!process.env.CI) {
+    return 'Automated Cypress run';
+  }
+  const props = {
+    jobName: process.env.CIRCLE_JOB,
+    branch: process.env.CIRCLE_BRANCH,
+    repoName: process.env.CIRCLE_PROJECT_REPONAME,
+    pullRequest: process.env.CIRCLE_PULL_REQUEST,
+    sha: process.env.CIRCLE_SHA1,
+  };
+  return JSON.stringify(props, null, 2);
+}
+
 export class CypressTestRailReporter extends reporters.Spec {
   private results: TestRailResult[] = [];
   private testRail: TestRail;
@@ -27,9 +48,10 @@ export class CypressTestRailReporter extends reporters.Spec {
 
     runner.on('start', () => {
       const executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
-      const name = `${reporterOptions.runName || 'Automated test run'} ${executionDateTime}`;
-      const description = 'For the Cypress run visit https://dashboard.cypress.io/#/projects/runs';
-      this.testRail.createRun(name, description);
+      const key = createKey();
+      const name = `${reporterOptions.runName || 'Cypress'} ${executionDateTime}`;
+      const description = `${key}\n${createDescription()}`;
+      this.testRail.getRun(name, description, key);
     });
 
     runner.on('pass', test => {
@@ -69,14 +91,11 @@ export class CypressTestRailReporter extends reporters.Spec {
           'No testcases were matched. Ensure that your tests are declared correctly and matches Cxxx',
           '\n'
         );
-        this.testRail.deleteRun();
-
         return;
       }
 
       // publish test cases results & close the run
-      this.testRail.publishResults(this.results)
-        .then(() => this.testRail.closeRun());
+      this.testRail.publishResults(this.results);
     });
   }
 

@@ -33,6 +33,27 @@ export class TestRail {
       .catch(error => console.error(error));
   }
 
+  public async getRun (name: string, description: string, key: string) {
+    axios({
+      method: 'get',
+      url: `${this.base}/get_runs/${this.options.projectId}`,
+      headers: { 'Content-Type': 'application/json' },
+      auth: {
+        username: this.options.username,
+        password: this.options.password,
+      },
+    })
+      .then(response => {
+        const run = response.data.runs.find(run => run.description && run.description.indexOf(key) >= 0);
+        if (run) {
+          this.runId = run.id;
+          return;
+        }
+        return this.createRun(name, description);
+      })
+      .catch(error => console.error(error));
+  }
+
   public async createRun (name: string, description: string) {
     if (this.options.includeAllInTestRun === false){
       this.includeAll = false;

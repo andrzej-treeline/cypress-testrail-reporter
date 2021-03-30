@@ -16,6 +16,25 @@ var testrail_1 = require("./testrail");
 var shared_1 = require("./shared");
 var testrail_interface_1 = require("./testrail.interface");
 var chalk = require('chalk');
+var createKey = function () {
+    if (!process.env.CI) {
+        return "[" + (process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')) + "]";
+    }
+    return "[" + process.env.CIRCLE_BUILD_URL + "]";
+};
+var createDescription = function () {
+    if (!process.env.CI) {
+        return 'Automated Cypress run';
+    }
+    var props = {
+        jobName: process.env.CIRCLE_JOB,
+        branch: process.env.CIRCLE_BRANCH,
+        repoName: process.env.CIRCLE_PROJECT_REPONAME,
+        pullRequest: process.env.CIRCLE_PULL_REQUEST,
+        sha: process.env.CIRCLE_SHA1,
+    };
+    return JSON.stringify(props, null, 2);
+};
 var CypressTestRailReporter = /** @class */ (function (_super) {
     __extends(CypressTestRailReporter, _super);
     function CypressTestRailReporter(runner, options) {
@@ -33,9 +52,10 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         _this.validate(reporterOptions, 'suiteId');
         runner.on('start', function () {
             var executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
-            var name = (reporterOptions.runName || 'Automated test run') + " " + executionDateTime;
-            var description = 'For the Cypress run visit https://dashboard.cypress.io/#/projects/runs';
-            _this.testRail.createRun(name, description);
+            var key = createKey();
+            var name = (reporterOptions.runName || 'Cypress') + " " + executionDateTime;
+            var description = key + "\n" + createDescription();
+            _this.testRail.getRun(name, description, key);
         });
         runner.on('pass', function (test) {
             var caseIds = shared_1.titleToCaseIds(test.title);
@@ -70,12 +90,10 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
             if (_this.results.length == 0) {
                 console.log('\n', chalk.magenta.underline.bold('(TestRail Reporter)'));
                 console.warn('\n', 'No testcases were matched. Ensure that your tests are declared correctly and matches Cxxx', '\n');
-                _this.testRail.deleteRun();
                 return;
             }
             // publish test cases results & close the run
-            _this.testRail.publishResults(_this.results)
-                .then(function () { return _this.testRail.closeRun(); });
+            _this.testRail.publishResults(_this.results);
         });
         return _this;
     }
