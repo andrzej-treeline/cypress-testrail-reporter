@@ -6,10 +6,7 @@ import { Status, TestRailResult } from './testrail.interface';
 const chalk = require('chalk');
 
 const createKey = () => {
-  if (!process.env.CI) {
-    return `[${process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')}]`;
-  }
-  return `[${process.env.CIRCLE_BUILD_URL}]`;
+  return `[ ${process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')} ]`;
 }
 
 const createDescription = () => {
@@ -94,7 +91,7 @@ export class CypressTestRailReporter extends reporters.Spec {
         return;
       }
 
-      // publish test cases results & close the run
+      // publish test cases results
       this.testRail.publishResults(this.results);
     });
   }
