@@ -17,10 +17,7 @@ var shared_1 = require("./shared");
 var testrail_interface_1 = require("./testrail.interface");
 var chalk = require('chalk');
 var createKey = function () {
-    if (!process.env.CI) {
-        return "[" + (process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')) + "]";
-    }
-    return "[" + process.env.CIRCLE_BUILD_URL + "]";
+    return "[ " + (process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')) + " ]";
 };
 var createDescription = function () {
     if (!process.env.CI) {
@@ -92,7 +89,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                 console.warn('\n', 'No testcases were matched. Ensure that your tests are declared correctly and matches Cxxx', '\n');
                 return;
             }
-            // publish test cases results & close the run
+            // publish test cases results
             _this.testRail.publishResults(_this.results);
         });
         return _this;
