@@ -17,10 +17,7 @@
   "readmeFilename": "README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vivify-Ideas/cypress-testrail-reporter.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Vivify-Ideas/cypress-testrail-reporter/issues"
+    "url": "https://bitbucket.org/treelineinteractive/cypress-testrail-reporter.git"
   },
   "scripts": {
     "tsc": "tsc",
