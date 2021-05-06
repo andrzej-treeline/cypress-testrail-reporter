@@ -23,6 +23,16 @@ const createDescription = () => {
   return JSON.stringify(props, null, 2);
 }
 
+const releaseInfo = () => {
+  if (!process.env.CI) {
+    return undefined;
+  }
+  if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
+    return undefined;
+  }
+  return `${process.env.CIRCLE_BRANCH} ${process.env.CIRCLE_SHA1}`;
+}
+
 export class CypressTestRailReporter extends reporters.Spec {
   private results: TestRailResult[] = [];
   private testRail: TestRail;
@@ -46,7 +56,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     runner.on('start', () => {
       const executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
       const key = createKey();
-      const name = `${reporterOptions.runName || 'Cypress'} ${executionDateTime}`;
+      const name = `${reporterOptions.runName || releaseInfo() || 'Cypress'} ${executionDateTime}`;
       const description = `${key}\n${createDescription()}`;
       this.testRail.getRun(name, description, key);
     });

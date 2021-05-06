@@ -32,6 +32,15 @@ var createDescription = function () {
     };
     return JSON.stringify(props, null, 2);
 };
+var releaseInfo = function () {
+    if (!process.env.CI) {
+        return undefined;
+    }
+    if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
+        return undefined;
+    }
+    return process.env.CIRCLE_BRANCH + " " + process.env.CIRCLE_SHA1;
+};
 var CypressTestRailReporter = /** @class */ (function (_super) {
     __extends(CypressTestRailReporter, _super);
     function CypressTestRailReporter(runner, options) {
@@ -50,7 +59,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         runner.on('start', function () {
             var executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
             var key = createKey();
-            var name = (reporterOptions.runName || 'Cypress') + " " + executionDateTime;
+            var name = (reporterOptions.runName || releaseInfo() || 'Cypress') + " " + executionDateTime;
             var description = key + "\n" + createDescription();
             _this.testRail.getRun(name, description, key);
         });
