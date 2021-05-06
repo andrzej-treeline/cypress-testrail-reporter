@@ -22,6 +22,8 @@ export interface TestRailResult {
   case_id: number;
   status_id: Status;
   comment?: String;
+  version?: String;
+  elapsed?: String;
 }
 
 export interface TestRailCase {

@@ -7,7 +7,7 @@ const chalk = require('chalk');
 
 const createKey = () => {
   return `[ ${process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')} ]`;
-}
+};
 
 const createDescription = () => {
   if (!process.env.CI) {
@@ -21,7 +21,31 @@ const createDescription = () => {
     sha: process.env.CIRCLE_SHA1,
   };
   return JSON.stringify(props, null, 2);
-}
+};
+
+const formatError = ({ message, actual, expected }) => {
+  let output = '';
+  if (message) {
+    output += `**Error**: ${message}\n`
+  }
+  if (actual) {
+    output += `---\n**Actual**\n${actual.split('\n').map(line => `    ${line}`).join('\n')}\n\n`;
+  }
+  if (expected) {
+    output += `---\n**Expected**\n${expected.split('\n').map(line => `    ${line}`).join('\n')}\n\n`;
+  }
+  return output;
+};
+
+const releaseVersion = () => {
+  if (!process.env.CI) {
+    return '';
+  }
+  if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
+    return '';
+  }
+  return process.env.CIRCLE_BRANCH.split('/')[1];
+};
 
 const releaseInfo = () => {
   if (!process.env.CI) {
@@ -30,8 +54,8 @@ const releaseInfo = () => {
   if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
     return '';
   }
-  return `${process.env.CIRCLE_BRANCH} ${process.env.CIRCLE_SHA1}`;
-}
+  return `${releaseVersion()} ${process.env.CIRCLE_SHA1}`;
+};
 
 export class CypressTestRailReporter extends reporters.Spec {
   private results: TestRailResult[] = [];
@@ -69,7 +93,8 @@ export class CypressTestRailReporter extends reporters.Spec {
             case_id: caseId,
             status_id: Status.Passed,
             comment: `Execution time: ${test.duration}ms`,
-            elapsed: `${test.duration/1000}s`
+            elapsed: `${test.duration/1000}s`,
+            version: releaseVersion(),
           };
         });
         this.results.push(...results);
@@ -77,16 +102,15 @@ export class CypressTestRailReporter extends reporters.Spec {
     });
 
     runner.on('fail', test => {
-      if (test.err) {
-        console.log('Error object', test.err);
-      }
       const caseIds = titleToCaseIds(test.title);
       if (caseIds.length > 0) {
         const results = caseIds.map(caseId => {
           return {
             case_id: caseId,
             status_id: Status.Failed,
-            comment: `${test.err.message}`,
+            comment: formatError(test.err),
+            elapsed: `${test.duration/1000}s`,
+            version: releaseVersion(),
           };
         });
         this.results.push(...results);

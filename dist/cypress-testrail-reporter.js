@@ -32,6 +32,29 @@ var createDescription = function () {
     };
     return JSON.stringify(props, null, 2);
 };
+var formatError = function (_a) {
+    var message = _a.message, actual = _a.actual, expected = _a.expected;
+    var output = '';
+    if (message) {
+        output += "**Error**: " + message + "\n";
+    }
+    if (actual) {
+        output += "---\n**Actual**\n" + actual.split('\n').map(function (line) { return "    " + line; }).join('\n') + "\n\n";
+    }
+    if (expected) {
+        output += "---\n**Expected**\n" + expected.split('\n').map(function (line) { return "    " + line; }).join('\n') + "\n\n";
+    }
+    return output;
+};
+var releaseVersion = function () {
+    if (!process.env.CI) {
+        return '';
+    }
+    if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
+        return '';
+    }
+    return process.env.CIRCLE_BRANCH.split('/')[1];
+};
 var releaseInfo = function () {
     if (!process.env.CI) {
         return '';
@@ -39,7 +62,7 @@ var releaseInfo = function () {
     if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
         return '';
     }
-    return process.env.CIRCLE_BRANCH + " " + process.env.CIRCLE_SHA1;
+    return releaseVersion() + " " + process.env.CIRCLE_SHA1;
 };
 var CypressTestRailReporter = /** @class */ (function (_super) {
     __extends(CypressTestRailReporter, _super);
@@ -71,7 +94,8 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                         case_id: caseId,
                         status_id: testrail_interface_1.Status.Passed,
                         comment: "Execution time: " + test.duration + "ms",
-                        elapsed: test.duration / 1000 + "s"
+                        elapsed: test.duration / 1000 + "s",
+                        version: releaseVersion(),
                     };
                 });
                 (_a = _this.results).push.apply(_a, results);
@@ -79,16 +103,15 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
             var _a;
         });
         runner.on('fail', function (test) {
-            if (test.err) {
-                console.log('Error object', test.err);
-            }
             var caseIds = shared_1.titleToCaseIds(test.title);
             if (caseIds.length > 0) {
                 var results = caseIds.map(function (caseId) {
                     return {
                         case_id: caseId,
                         status_id: testrail_interface_1.Status.Failed,
-                        comment: "" + test.err.message,
+                        comment: formatError(test.err),
+                        elapsed: test.duration / 1000 + "s",
+                        version: releaseVersion(),
                     };
                 });
                 (_a = _this.results).push.apply(_a, results);
