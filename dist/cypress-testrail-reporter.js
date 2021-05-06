@@ -79,6 +79,9 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
             var _a;
         });
         runner.on('fail', function (test) {
+            if (test.err) {
+                console.log('Error object', test.err);
+            }
             var caseIds = shared_1.titleToCaseIds(test.title);
             if (caseIds.length > 0) {
                 var results = caseIds.map(function (caseId) {
