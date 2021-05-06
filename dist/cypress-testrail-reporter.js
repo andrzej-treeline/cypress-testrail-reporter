@@ -17,7 +17,7 @@ var shared_1 = require("./shared");
 var testrail_interface_1 = require("./testrail.interface");
 var chalk = require('chalk');
 var createKey = function () {
-    return "[ " + (process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')) + " ]";
+    return "[ " + (process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('DD-MM-YYYY HH:mm:ss')) + " ]";
 };
 var createDescription = function () {
     if (!process.env.CI) {
@@ -62,7 +62,7 @@ var releaseInfo = function () {
     if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
         return '';
     }
-    return releaseVersion() + " " + process.env.CIRCLE_SHA1;
+    return process.env.CIRCLE_BRANCH + " " + process.env.CIRCLE_SHA1;
 };
 var CypressTestRailReporter = /** @class */ (function (_super) {
     __extends(CypressTestRailReporter, _super);
@@ -80,7 +80,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         _this.validate(reporterOptions, 'projectId');
         _this.validate(reporterOptions, 'suiteId');
         runner.on('start', function () {
-            var executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
+            var executionDateTime = moment().format('DD-MM-YYYY HH:mm');
             var key = createKey();
             var name = (reporterOptions.runName || 'Cypress') + " " + executionDateTime + " " + releaseInfo();
             var description = key + "\n" + createDescription();

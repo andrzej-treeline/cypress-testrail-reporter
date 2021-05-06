@@ -6,7 +6,7 @@ import { Status, TestRailResult } from './testrail.interface';
 const chalk = require('chalk');
 
 const createKey = () => {
-  return `[ ${process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('MMM Do YYYY, HH:mm (Z)')} ]`;
+  return `[ ${process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('DD-MM-YYYY HH:mm:ss')} ]`;
 };
 
 const createDescription = () => {
@@ -54,7 +54,7 @@ const releaseInfo = () => {
   if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
     return '';
   }
-  return `${releaseVersion()} ${process.env.CIRCLE_SHA1}`;
+  return `${process.env.CIRCLE_BRANCH} ${process.env.CIRCLE_SHA1}`;
 };
 
 export class CypressTestRailReporter extends reporters.Spec {
@@ -78,7 +78,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     this.validate(reporterOptions, 'suiteId');
 
     runner.on('start', () => {
-      const executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
+      const executionDateTime = moment().format('DD-MM-YYYY HH:mm');
       const key = createKey();
       const name = `${reporterOptions.runName || 'Cypress'} ${executionDateTime} ${releaseInfo()}`;
       const description = `${key}\n${createDescription()}`;
