@@ -56,7 +56,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     runner.on('start', () => {
       const executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
       const key = createKey();
-      const name = `${reporterOptions.runName || releaseInfo() || 'Cypress'} ${executionDateTime}`;
+      const name = `${reporterOptions.runName || 'Cypress'} ${executionDateTime} ${releaseInfo()}`;
       const description = `${key}\n${createDescription()}`;
       this.testRail.getRun(name, description, key);
     });

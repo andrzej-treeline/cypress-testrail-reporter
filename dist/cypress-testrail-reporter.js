@@ -59,7 +59,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         runner.on('start', function () {
             var executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
             var key = createKey();
-            var name = (reporterOptions.runName || releaseInfo() || 'Cypress') + " " + executionDateTime;
+            var name = (reporterOptions.runName || 'Cypress') + " " + executionDateTime + " " + releaseInfo();
             var description = key + "\n" + createDescription();
             _this.testRail.getRun(name, description, key);
         });
