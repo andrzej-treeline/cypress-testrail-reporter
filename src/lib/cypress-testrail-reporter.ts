@@ -25,10 +25,10 @@ const createDescription = () => {
 
 const releaseInfo = () => {
   if (!process.env.CI) {
-    return undefined;
+    return '';
   }
   if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
-    return undefined;
+    return '';
   }
   return `${process.env.CIRCLE_BRANCH} ${process.env.CIRCLE_SHA1}`;
 }
