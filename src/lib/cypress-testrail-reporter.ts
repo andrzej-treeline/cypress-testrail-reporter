@@ -48,7 +48,7 @@ const releaseVersion = () => {
     return '';
   }
   if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
-    return '';
+    return process.env.CIRCLE_SHA1 || '';
   }
   return process.env.CIRCLE_BRANCH.split('/')[1];
 };
