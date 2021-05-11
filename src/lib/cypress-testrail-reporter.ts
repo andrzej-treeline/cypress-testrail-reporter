@@ -7,7 +7,7 @@ const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
 import { readdirSync } from "@jsdevtools/readdir-enhanced";
-const deasync = require('deasync');
+const { forceSync } = require('node-force-sync');
 
 const createKey = () => {
   return `[ ${process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('DD-MM-YYYY HH:mm:ss')} ]`;
@@ -105,21 +105,6 @@ export class CypressTestRailReporter extends reporters.Spec {
       return this.testRail.getRun(name, description, key);
     });
 
-    /**
-     * To work around a Cypress issue where Mocha exits before async requests
-     * finish, we use the deasync library to ensure our axios promises
-     * actually complete. For more information, see:
-     * https://github.com/cypress-io/cypress/issues/7139
-     * @param promise A `finally` condition will be appended to this promise, enabling a deasync loop
-     */
-    function makeSync(promise) {
-      let done = false;
-      let result = undefined;
-      (async() => result = await promise.finally(() => done = true))();
-      deasync.loopWhile(() => !done);
-      return result;
-    }
-
     runner.on('pass', test => {
       const caseIds = titleToCaseIds(test.title);
       if (caseIds.length > 0) {
@@ -170,7 +155,7 @@ export class CypressTestRailReporter extends reporters.Spec {
       }
 
       // publish test cases results
-      return makeSync(new Promise(async resolve => {
+      return forceSync(new Promise(async resolve => {
         const results = await this.testRail.publishResults(this.results);
         if (!reporterOptions.uploadScreenshots) {
           resolve(true);
