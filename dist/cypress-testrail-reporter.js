@@ -108,15 +108,12 @@ var releaseVersion = function () {
         return '';
     }
     if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
-        return process.env.CIRCLE_SHA1 || '';
+        return '';
     }
     return process.env.CIRCLE_BRANCH.split('/')[1];
 };
 var releaseInfo = function () {
     if (!process.env.CI) {
-        return '';
-    }
-    if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
         return '';
     }
     return process.env.CIRCLE_BRANCH + " " + process.env.CIRCLE_SHA1;
