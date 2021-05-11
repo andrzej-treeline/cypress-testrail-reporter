@@ -195,19 +195,19 @@ var TestRail = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!(this.automatedTypeId && this.cases)) return [3 /*break*/, 4];
+                        if (!(this.setTypeId && this.cases)) return [3 /*break*/, 4];
                         _loop_1 = function (result) {
                             var existingCase, url, response;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         existingCase = this_1.cases.find(function (c) { return c.id === result.case_id; });
-                                        if (!(existingCase && existingCase.type_id !== this_1.automatedTypeId)) return [3 /*break*/, 2];
+                                        if (!(existingCase && existingCase.type_id !== this_1.setTypeId)) return [3 /*break*/, 2];
                                         url = this_1.base + "/update_case/" + result.case_id;
                                         return [4 /*yield*/, this_1.fetchWithAuth(url, {
                                                 method: 'POST',
                                                 body: JSON.stringify({
-                                                    'type_id': this_1.automatedTypeId
+                                                    'type_id': this_1.setTypeId
                                                 }),
                                             })];
                                     case 1:
@@ -238,15 +238,20 @@ var TestRail = /** @class */ (function () {
     TestRail.prototype.createRun = function (name, description) {
         return __awaiter(this, void 0, void 0, function () {
             var caseTypes, _a, url, response, json;
+            var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, this.getCaseTypes()];
+                    case 0:
+                        if (!this.options.setType) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.getCaseTypes()];
                     case 1:
                         caseTypes = _b.sent();
-                        this.automatedTypeId = (caseTypes.find(function (t) { return t.name === 'Automated'; }) || {}).id;
+                        this.setTypeId = (caseTypes.find(function (t) { return t.name === _this.options.setType; }) || {}).id;
+                        _b.label = 2;
+                    case 2:
                         _a = this;
                         return [4 /*yield*/, this.getCases()];
-                    case 2:
+                    case 3:
                         _a.cases = _b.sent();
                         if (this.options.includeAllInTestRun === false) {
                             this.includeAll = false;
@@ -263,10 +268,10 @@ var TestRail = /** @class */ (function () {
                                     case_ids: this.caseIds
                                 }),
                             })];
-                    case 3:
+                    case 4:
                         response = _b.sent();
                         return [4 /*yield*/, response.json()];
-                    case 4:
+                    case 5:
                         json = _b.sent();
                         this.runId = json.id;
                         return [2 /*return*/, json];

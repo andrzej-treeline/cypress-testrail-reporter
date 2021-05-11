@@ -125,9 +125,11 @@ export class CypressTestRailReporter extends reporters.Spec {
     runner.on('fail', test => {
       const caseIds = titleToCaseIds(test.title);
       if (caseIds.length > 0) {
-        const screenshots = findScreenshots(caseIds[0]);
-        if (screenshots && screenshots.length > 0) {
-          this.screenshots[caseIds[0]] = findScreenshots(caseIds[0]);
+        if (reporterOptions.uploadScreenshots) {
+          const screenshots = findScreenshots(caseIds[0]);
+          if (screenshots && screenshots.length > 0) {
+            this.screenshots[caseIds[0]] = findScreenshots(caseIds[0]);
+          }
         }
         const results = caseIds.map(caseId => {
           return {
@@ -156,6 +158,10 @@ export class CypressTestRailReporter extends reporters.Spec {
       // publish test cases results
       return new Promise(async resolve => {
         const results = await this.testRail.publishResults(this.results);
+        if (!reporterOptions.uploadScreenshots) {
+          resolve(true);
+          return;
+        }
         for (const [caseId, screenshots] of Object.entries(this.screenshots)) {
           const caseResults = await this.testRail.getResultsForCase(Number(caseId));
           if (!caseResults || caseResults.length < 1 || !screenshots || screenshots.length < 1) {
@@ -165,6 +171,7 @@ export class CypressTestRailReporter extends reporters.Spec {
             await this.testRail.addAttachmentToResult(caseResults[0].id, screenshotPath);
           }
         }
+        resolve(true);
       });
     });
   }

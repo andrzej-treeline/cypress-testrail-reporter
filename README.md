@@ -25,6 +25,8 @@ Add reporter to your `cypress.json`:
   "password": "password",
   "projectId": 1,
   "suiteId": 1,
+  "uploadScreenshots": false,
+  "setType": "Automated"
 }
 ```
 
@@ -59,6 +61,10 @@ it("Can authenticate a valid userC123", ...
 **groupId**: _string_ (optional: needs "includeAllInTestRun": false ) The ID of the section/group
 
 **filter**: _string_ (optional: needs "includeAllInTestRun": false) Only return cases with matching filter string in the case title
+
+**uploadScreenshots**: _bool_ (optional: default is false) will try to upload screenshots along with test results
+
+**setType**: _string_ (optional: default is disabled) will change the type of test case to the one with specified string e.g. `"setType": "Automated"`
 
 ## TestRail Settings
 

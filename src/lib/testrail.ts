@@ -10,7 +10,7 @@ export class TestRail {
   private runId: Number;
   private includeAll: Boolean = true;
   private caseIds: Number[] = [];
-  private automatedTypeId: Number;
+  private setTypeId: Number;
   cases: TestRailCase[];
 
   fetchWithAuth = async (url: string, options?: { method?: string, headers?: any, body?: string | FormData }) => {
@@ -102,15 +102,15 @@ export class TestRail {
   }
 
   public async updateCasesType (results: TestRailResult[]) {
-    if (this.automatedTypeId && this.cases) {
+    if (this.setTypeId && this.cases) {
       for (const result of results) {
         const existingCase = this.cases.find(c => c.id === result.case_id);
-        if (existingCase && existingCase.type_id !== this.automatedTypeId) {
+        if (existingCase && existingCase.type_id !== this.setTypeId) {
           const url = `${this.base}/update_case/${result.case_id}`;
           const response = await this.fetchWithAuth(url, {
             method: 'POST',
             body: JSON.stringify({
-              'type_id': this.automatedTypeId
+              'type_id': this.setTypeId
             }),
           });
         }
@@ -119,8 +119,10 @@ export class TestRail {
   }
 
   public async createRun (name: string, description: string) {
-    const caseTypes = await this.getCaseTypes();
-    this.automatedTypeId = (caseTypes.find(t => t.name === 'Automated') || {}).id;
+    if (this.options.setType) {
+      const caseTypes = await this.getCaseTypes();
+      this.setTypeId = (caseTypes.find(t => t.name === this.options.setType) || {}).id;
+    }
     this.cases = await this.getCases();
     if (this.options.includeAllInTestRun === false){
       this.includeAll = false;

@@ -172,9 +172,11 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
             var _a;
             var caseIds = shared_1.titleToCaseIds(test.title);
             if (caseIds.length > 0) {
-                var screenshots = findScreenshots(caseIds[0]);
-                if (screenshots && screenshots.length > 0) {
-                    _this.screenshots[caseIds[0]] = findScreenshots(caseIds[0]);
+                if (reporterOptions.uploadScreenshots) {
+                    var screenshots = findScreenshots(caseIds[0]);
+                    if (screenshots && screenshots.length > 0) {
+                        _this.screenshots[caseIds[0]] = findScreenshots(caseIds[0]);
+                    }
                 }
                 var results = caseIds.map(function (caseId) {
                     return __assign(__assign({ case_id: caseId, status_id: testrail_interface_1.Status.Failed, comment: formatError(test.err) }, test.duration && { elapsed: test.duration / 1000 + "s" }), { version: releaseVersion() });
@@ -196,6 +198,10 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                         case 0: return [4 /*yield*/, this.testRail.publishResults(this.results)];
                         case 1:
                             results = _d.sent();
+                            if (!reporterOptions.uploadScreenshots) {
+                                resolve(true);
+                                return [2 /*return*/];
+                            }
                             _i = 0, _a = Object.entries(this.screenshots);
                             _d.label = 2;
                         case 2:
@@ -222,7 +228,9 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                         case 7:
                             _i++;
                             return [3 /*break*/, 2];
-                        case 8: return [2 /*return*/];
+                        case 8:
+                            resolve(true);
+                            return [2 /*return*/];
                     }
                 });
             }); });
