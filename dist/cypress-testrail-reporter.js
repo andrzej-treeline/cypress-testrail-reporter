@@ -189,8 +189,10 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                 console.warn('\n', 'No testcases were matched. Ensure that your tests are declared correctly and matches Cxxx', '\n');
                 return;
             }
+            var lockFileName = '/tmp/cypress-testrail-reporter.lock';
+            fs.closeSync(fs.openSync(lockFileName, 'w'));
             // publish test cases results
-            return forceSync(new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
+            new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
                 var results, _i, _a, _b, caseId, screenshots, caseResults, _c, screenshots_1, screenshotPath;
                 return __generator(this, function (_d) {
                     switch (_d.label) {
@@ -232,7 +234,32 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                             return [2 /*return*/];
                     }
                 });
-            }); }));
+            }); })
+                .then(function () { return fs.unlink(lockFileName); })
+                .catch(function () { return fs.unlink(lockFileName); });
+            return forceSync(function () {
+                var localFs = require('fs');
+                var lockFileName = '/tmp/cypress-testrail-reporter.lock';
+                var attempt = 0;
+                return new Promise(function (resolve) {
+                    var interval = setInterval(function () {
+                        try {
+                            localFs.statSync(lockFileName);
+                            console.log(lockFileName + " exists");
+                            ++attempt;
+                            if (attempt > 60) {
+                                clearInterval(interval);
+                                console.error(lockFileName + " still exists after " + attempt + " attempts");
+                                resolve(false);
+                            }
+                        }
+                        catch (err) {
+                            console.log(lockFileName + " gone");
+                            resolve(true);
+                        }
+                    }, 1000);
+                });
+            });
         });
         return _this;
     }
