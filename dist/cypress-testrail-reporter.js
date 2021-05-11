@@ -69,6 +69,7 @@ var testrail_interface_1 = require("./testrail.interface");
 var chalk = require('chalk');
 var path = require('path');
 var readdir_enhanced_1 = require("@jsdevtools/readdir-enhanced");
+var deasync = require('deasync');
 var createKey = function () {
     return "[ " + (process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('DD-MM-YYYY HH:mm:ss')) + " ]";
 };
@@ -155,6 +156,26 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
             var description = key + "\n" + createDescription();
             return _this.testRail.getRun(name, description, key);
         });
+        /**
+         * To work around a Cypress issue where Mocha exits before async requests
+         * finish, we use the deasync library to ensure our axios promises
+         * actually complete. For more information, see:
+         * https://github.com/cypress-io/cypress/issues/7139
+         * @param promise A `finally` condition will be appended to this promise, enabling a deasync loop
+         */
+        function makeSync(promise) {
+            var _this = this;
+            var done = false;
+            var result = undefined;
+            (function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, promise.finally(function () { return done = true; })];
+                    case 1: return [2 /*return*/, result = _a.sent()];
+                }
+            }); }); })();
+            deasync.loopWhile(function () { return !done; });
+            return result;
+        }
         runner.on('pass', function (test) {
             var _a;
             var caseIds = shared_1.titleToCaseIds(test.title);
@@ -188,7 +209,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                 return;
             }
             // publish test cases results
-            return new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
+            return makeSync(new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
                 var results, _i, _a, _b, caseId, screenshots, caseResults, _c, screenshots_1, screenshotPath;
                 return __generator(this, function (_d) {
                     switch (_d.label) {
@@ -230,7 +251,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                             return [2 /*return*/];
                     }
                 });
-            }); });
+            }); }));
         });
         return _this;
     }

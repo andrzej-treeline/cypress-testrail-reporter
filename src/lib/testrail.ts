@@ -3,6 +3,7 @@ const chalk = require('chalk');
 const nodeFetch = require('node-fetch');
 const fs = require('fs');
 const FormData = require('form-data');
+
 import { TestRailOptions, TestRailResult, TestRailCase } from './testrail.interface';
 
 export class TestRail {
