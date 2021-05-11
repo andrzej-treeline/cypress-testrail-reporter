@@ -5,9 +5,7 @@ import { titleToCaseIds } from './shared';
 import { Status, TestRailResult } from './testrail.interface';
 const chalk = require('chalk');
 const path = require('path');
-const fs = require('fs');
 import { readdirSync } from "@jsdevtools/readdir-enhanced";
-const { forceSync } = require('node-force-sync');
 
 const createKey = () => {
   return `[ ${process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('DD-MM-YYYY HH:mm:ss')} ]`;
@@ -154,10 +152,8 @@ export class CypressTestRailReporter extends reporters.Spec {
         return;
       }
 
-      const lockFileName = '/tmp/cypress-testrail-reporter.lock';
-      fs.closeSync(fs.openSync(lockFileName, 'w'));
       // publish test cases results
-      new Promise(async resolve => {
+      return new Promise(async resolve => {
         const results = await this.testRail.publishResults(this.results);
         if (!reporterOptions.uploadScreenshots) {
           resolve(true);
@@ -173,30 +169,14 @@ export class CypressTestRailReporter extends reporters.Spec {
           }
         }
         resolve(true);
-      })
-      .then(() => fs.unlink(lockFileName))
-      .catch(() => fs.unlink(lockFileName));
-      return forceSync(function() {
-        const localFs = require('fs');
-        const lockFileName = '/tmp/cypress-testrail-reporter.lock';
-        let attempt = 0;
-        return new Promise(resolve => {
-          const interval = setInterval(function() {
-            try {
-              localFs.statSync(lockFileName);
-              console.log(`${lockFileName} exists`);
-              ++attempt;
-              if (attempt > 60) {
-                clearInterval(interval);
-                console.error(`${lockFileName} still exists after ${attempt} attempts`);
-                resolve(false);
-              }
-            } catch (err) {
-              console.log(`${lockFileName} gone`);
-              resolve(true);
-            }
-          }, 1000);
-        })
+      }).then(() => {
+        if (reporterOptions.processExit !== false) {
+          process.exit(0);
+        }
+      }).catch(() => {
+        if (reporterOptions.processExit !== false) {
+          process.exit(0);
+        }
       });
     });
   }
