@@ -4,6 +4,8 @@ import { TestRail } from './testrail';
 import { titleToCaseIds } from './shared';
 import { Status, TestRailResult } from './testrail.interface';
 const chalk = require('chalk');
+const path = require('path');
+import { readdirSync } from "@jsdevtools/readdir-enhanced";
 
 const createKey = () => {
   return `[ ${process.env.CIRCLE_BUILD_URL || process.env.TERM_SESSION_ID || moment().format('DD-MM-YYYY HH:mm:ss')} ]`;
@@ -29,10 +31,14 @@ const formatError = ({ message, actual, expected }) => {
     output += `**Error**: ${message}\n`
   }
   if (actual) {
-    output += `---\n**Actual**\n${actual.split('\n').map(line => `    ${line}`).join('\n')}\n\n`;
+    const lines = actual.split('\n');
+    const text = `${lines.slice(0,50).map(line => `    ${line}`).join('\n')}${lines.length > 50 ? '(...truncated)' : ''}`;
+    output += `---\n**Actual**\n${text}\n\n`;
   }
   if (expected) {
-    output += `---\n**Expected**\n${expected.split('\n').map(line => `    ${line}`).join('\n')}\n\n`;
+    const lines = expected.split('\n');
+    const text = `${lines.slice(0,50).map(line => `    ${line}`).join('\n')}${lines.length > 50 ? '(...truncated)' : ''}`;
+    output += `---\n**Expected**\n${text}\n\n`;
   }
   return output;
 };
@@ -42,7 +48,7 @@ const releaseVersion = () => {
     return '';
   }
   if (!/^release\/[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.CIRCLE_BRANCH)) {
-    return '';
+    return process.env.CIRCLE_SHA1 || '';
   }
   return process.env.CIRCLE_BRANCH.split('/')[1];
 };
@@ -57,9 +63,24 @@ const releaseInfo = () => {
   return `${process.env.CIRCLE_BRANCH} ${process.env.CIRCLE_SHA1}`;
 };
 
+const findScreenshots = (caseId) => {
+  try {
+    const baseDir = __dirname.split('/node_modules/', 1)[0];
+    const SCREENSHOTS_FOLDER_PATH = path.join(baseDir, 'cypress/screenshots');
+    const matchedFiles = readdirSync(SCREENSHOTS_FOLDER_PATH, { deep: true, filter: (stats) => {
+      return stats.isFile() && stats.path.includes(`C${caseId}`) && /(failed|attempt)/g.test(stats.path);
+    }});
+    return matchedFiles.map(relativePath => path.join(SCREENSHOTS_FOLDER_PATH, relativePath));
+  } catch (error) {
+    console.error('Error looking up screenshots', error);
+    return [];
+  }
+};
+
 export class CypressTestRailReporter extends reporters.Spec {
   private results: TestRailResult[] = [];
   private testRail: TestRail;
+  private screenshots: { [key: number]: string[] } = {};
 
   constructor(runner: any, options: any) {
     super(runner);
@@ -82,7 +103,7 @@ export class CypressTestRailReporter extends reporters.Spec {
       const key = createKey();
       const name = `${reporterOptions.runName || 'Cypress'} ${executionDateTime} ${releaseInfo()}`;
       const description = `${key}\n${createDescription()}`;
-      this.testRail.getRun(name, description, key);
+      return this.testRail.getRun(name, description, key);
     });
 
     runner.on('pass', test => {
@@ -93,7 +114,7 @@ export class CypressTestRailReporter extends reporters.Spec {
             case_id: caseId,
             status_id: Status.Passed,
             comment: `Execution time: ${test.duration}ms`,
-            elapsed: `${test.duration/1000}s`,
+            ...test.duration && { elapsed: `${test.duration/1000}s` },
             version: releaseVersion(),
           };
         });
@@ -104,12 +125,16 @@ export class CypressTestRailReporter extends reporters.Spec {
     runner.on('fail', test => {
       const caseIds = titleToCaseIds(test.title);
       if (caseIds.length > 0) {
+        const screenshots = findScreenshots(caseIds[0]);
+        if (screenshots && screenshots.length > 0) {
+          this.screenshots[caseIds[0]] = findScreenshots(caseIds[0]);
+        }
         const results = caseIds.map(caseId => {
           return {
             case_id: caseId,
             status_id: Status.Failed,
             comment: formatError(test.err),
-            elapsed: `${test.duration/1000}s`,
+            ...test.duration && { elapsed: `${test.duration/1000}s` },
             version: releaseVersion(),
           };
         });
@@ -129,7 +154,18 @@ export class CypressTestRailReporter extends reporters.Spec {
       }
 
       // publish test cases results
-      this.testRail.publishResults(this.results);
+      return new Promise(async resolve => {
+        const results = await this.testRail.publishResults(this.results);
+        for (const [caseId, screenshots] of Object.entries(this.screenshots)) {
+          const caseResults = await this.testRail.getResultsForCase(Number(caseId));
+          if (!caseResults || caseResults.length < 1 || !screenshots || screenshots.length < 1) {
+            continue;
+          }
+          for (const screenshotPath of screenshots) {
+            await this.testRail.addAttachmentToResult(caseResults[0].id, screenshotPath);
+          }
+        }
+      });
     });
   }
 
