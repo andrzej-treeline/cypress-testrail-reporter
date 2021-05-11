@@ -68,6 +68,7 @@ var shared_1 = require("./shared");
 var testrail_interface_1 = require("./testrail.interface");
 var chalk = require('chalk');
 var path = require('path');
+var fs = require('fs');
 var readdir_enhanced_1 = require("@jsdevtools/readdir-enhanced");
 var deasync = require('deasync');
 var createKey = function () {

@@ -5,6 +5,7 @@ import { titleToCaseIds } from './shared';
 import { Status, TestRailResult } from './testrail.interface';
 const chalk = require('chalk');
 const path = require('path');
+const fs = require('fs');
 import { readdirSync } from "@jsdevtools/readdir-enhanced";
 const deasync = require('deasync');
 
