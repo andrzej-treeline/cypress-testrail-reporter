@@ -168,17 +168,32 @@ var TestRail = /** @class */ (function () {
     };
     TestRail.prototype.getRun = function (name, description, key) {
         return __awaiter(this, void 0, void 0, function () {
-            var url, response, json, run;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var caseTypes, _a, url, response, json, run;
+            var _this = this;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
+                        if (!(this.options.setType && !this.setTypeId)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.getCaseTypes()];
+                    case 1:
+                        caseTypes = _b.sent();
+                        this.setTypeId = (caseTypes.find(function (t) { return t.name === _this.options.setType; }) || {}).id;
+                        _b.label = 2;
+                    case 2:
+                        if (!!this.cases) return [3 /*break*/, 4];
+                        _a = this;
+                        return [4 /*yield*/, this.getCases()];
+                    case 3:
+                        _a.cases = _b.sent();
+                        _b.label = 4;
+                    case 4:
                         url = this.base + "/get_runs/" + this.options.projectId;
                         return [4 /*yield*/, this.fetchWithAuth(url)];
-                    case 1:
-                        response = _a.sent();
+                    case 5:
+                        response = _b.sent();
                         return [4 /*yield*/, response.json()];
-                    case 2:
-                        json = _a.sent();
+                    case 6:
+                        json = _b.sent();
                         run = (json.runs || json).find(function (run) { return run.description && run.description.indexOf(key) >= 0; });
                         if (run) {
                             this.runId = run.id;
@@ -251,22 +266,10 @@ var TestRail = /** @class */ (function () {
     };
     TestRail.prototype.createRun = function (name, description) {
         return __awaiter(this, void 0, void 0, function () {
-            var caseTypes, _a, url, response, json;
-            var _this = this;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var url, response, json;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        if (!this.options.setType) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.getCaseTypes()];
-                    case 1:
-                        caseTypes = _b.sent();
-                        this.setTypeId = (caseTypes.find(function (t) { return t.name === _this.options.setType; }) || {}).id;
-                        _b.label = 2;
-                    case 2:
-                        _a = this;
-                        return [4 /*yield*/, this.getCases()];
-                    case 3:
-                        _a.cases = _b.sent();
                         if (this.options.includeAllInTestRun === false) {
                             this.includeAll = false;
                             this.caseIds = this.cases.map(function (c) { return c.id; });
@@ -282,11 +285,11 @@ var TestRail = /** @class */ (function () {
                                     case_ids: this.caseIds
                                 }),
                             })];
-                    case 4:
-                        response = _b.sent();
+                    case 1:
+                        response = _a.sent();
                         return [4 /*yield*/, response.json()];
-                    case 5:
-                        json = _b.sent();
+                    case 2:
+                        json = _a.sent();
                         this.runId = json.id;
                         return [2 /*return*/, json];
                 }

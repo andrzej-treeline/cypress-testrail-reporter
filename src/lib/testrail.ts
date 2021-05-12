@@ -91,6 +91,13 @@ export class TestRail {
   }
 
   public async getRun (name: string, description: string, key: string) {
+    if (this.options.setType && !this.setTypeId) {
+      const caseTypes = await this.getCaseTypes();
+      this.setTypeId = (caseTypes.find(t => t.name === this.options.setType) || {}).id;
+    }
+    if (!this.cases) {
+      this.cases = await this.getCases();
+    }
     const url = `${this.base}/get_runs/${this.options.projectId}`;
     const response = await this.fetchWithAuth(url);
     const json = await response.json();
@@ -134,11 +141,6 @@ export class TestRail {
   }
 
   public async createRun (name: string, description: string) {
-    if (this.options.setType) {
-      const caseTypes = await this.getCaseTypes();
-      this.setTypeId = (caseTypes.find(t => t.name === this.options.setType) || {}).id;
-    }
-    this.cases = await this.getCases();
     if (this.options.includeAllInTestRun === false){
       this.includeAll = false;
       this.caseIds = this.cases.map(c => c.id);
