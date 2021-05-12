@@ -91,13 +91,11 @@ export class TestRail {
   }
 
   public async getRun (name: string, description: string, key: string) {
-    if (this.options.setType && !this.setTypeId) {
+    if (this.options.setType) {
       const caseTypes = await this.getCaseTypes();
       this.setTypeId = (caseTypes.find(t => t.name === this.options.setType) || {}).id;
     }
-    if (!this.cases) {
-      this.cases = await this.getCases();
-    }
+    this.cases = await this.getCases();
     const url = `${this.base}/get_runs/${this.options.projectId}`;
     const response = await this.fetchWithAuth(url);
     const json = await response.json();
@@ -116,23 +114,21 @@ export class TestRail {
     if (!this.cases || this.cases.length === 0) {
       return;
     }
-    if (this.setTypeId && !this.cases) {
-      for (const result of results) {
-        const existingCase = this.cases.find(c => c.id === result.case_id);
-        if (!existingCase) {
-          continue;
-        }
-        if (existingCase.type_id === this.setTypeId) {
-          continue;
-        }
-        const url = `${this.base}/update_case/${result.case_id}`;
-        const response = await this.fetchWithAuth(url, {
-          method: 'POST',
-          body: JSON.stringify({
-            'type_id': this.setTypeId
-          }),
-        });
+    for (const result of results) {
+      const existingCase = this.cases.find(c => c.id === result.case_id);
+      if (!existingCase) {
+        continue;
       }
+      if (existingCase.type_id === this.setTypeId) {
+        continue;
+      }
+      const url = `${this.base}/update_case/${result.case_id}`;
+      const response = await this.fetchWithAuth(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          'type_id': this.setTypeId
+        }),
+      });
     }
   }
 

@@ -173,26 +173,23 @@ var TestRail = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        if (!(this.options.setType && !this.setTypeId)) return [3 /*break*/, 2];
+                        if (!this.options.setType) return [3 /*break*/, 2];
                         return [4 /*yield*/, this.getCaseTypes()];
                     case 1:
                         caseTypes = _b.sent();
                         this.setTypeId = (caseTypes.find(function (t) { return t.name === _this.options.setType; }) || {}).id;
                         _b.label = 2;
                     case 2:
-                        if (!!this.cases) return [3 /*break*/, 4];
                         _a = this;
                         return [4 /*yield*/, this.getCases()];
                     case 3:
                         _a.cases = _b.sent();
-                        _b.label = 4;
-                    case 4:
                         url = this.base + "/get_runs/" + this.options.projectId;
                         return [4 /*yield*/, this.fetchWithAuth(url)];
-                    case 5:
+                    case 4:
                         response = _b.sent();
                         return [4 /*yield*/, response.json()];
-                    case 6:
+                    case 5:
                         json = _b.sent();
                         run = (json.runs || json).find(function (run) { return run.description && run.description.indexOf(key) >= 0; });
                         if (run) {
@@ -216,7 +213,6 @@ var TestRail = /** @class */ (function () {
                         if (!this.cases || this.cases.length === 0) {
                             return [2 /*return*/];
                         }
-                        if (!(this.setTypeId && !this.cases)) return [3 /*break*/, 4];
                         _loop_1 = function (result) {
                             var existingCase, url, response;
                             return __generator(this, function (_a) {
