@@ -83,7 +83,26 @@ export class CypressTestRailReporter extends reporters.Spec {
     super(runner);
 
     let reporterOptions = options.reporterOptions;
+    let processExitTimeout;
+    const startProcessExitTimeout = () => {
+      processExitTimeout = setTimeout(() => {
+        if (reporterOptions.processExit !== false) {
+          process.exit(0);
+        }
+      }, 60000);
+    };
 
+    const stopProcessExitTimeout = () => {
+      if (processExitTimeout) {
+        clearTimeout(processExitTimeout);
+      }
+      processExitTimeout = undefined;
+    };
+
+    const resetProcessExitTimeout = () => {
+      startProcessExitTimeout();
+    };
+    
     if (process.env.CYPRESS_TESTRAIL_REPORTER_PASSWORD) {
       reporterOptions.password = process.env.CYPRESS_TESTRAIL_REPORTER_PASSWORD;
     }
@@ -96,6 +115,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     this.validate(reporterOptions, 'suiteId');
 
     runner.on('start', () => {
+      stopProcessExitTimeout();
       const executionDateTime = moment().format('DD-MM-YYYY HH:mm');
       const key = createKey();
       const name = `${reporterOptions.runName || 'Cypress'} ${executionDateTime} ${releaseInfo()}`;
@@ -104,6 +124,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     });
 
     runner.on('pass', test => {
+      stopProcessExitTimeout();
       const caseIds = titleToCaseIds(test.title);
       if (caseIds.length > 0) {
         const results = caseIds.map(caseId => {
@@ -120,6 +141,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     });
 
     runner.on('fail', test => {
+      stopProcessExitTimeout();
       const caseIds = titleToCaseIds(test.title);
       if (caseIds.length > 0) {
         if (reporterOptions.uploadScreenshots) {
@@ -170,13 +192,9 @@ export class CypressTestRailReporter extends reporters.Spec {
         }
         resolve(true);
       }).then(() => {
-        if (reporterOptions.processExit !== false) {
-          process.exit(0);
-        }
+        resetProcessExitTimeout();
       }).catch(() => {
-        if (reporterOptions.processExit !== false) {
-          process.exit(0);
-        }
+        resetProcessExitTimeout();
       });
     });
   }
