@@ -111,22 +111,18 @@ export class TestRail {
 
   public async updateCasesType (results: TestRailResult[]) {
     if (!this.setTypeId) {
-      console.log('Missing typeId');
       return;
     }
     if (!this.cases || this.cases.length === 0) {
-      console.log('Missing cases');
       return;
     }
     if (this.setTypeId && !this.cases) {
       for (const result of results) {
         const existingCase = this.cases.find(c => c.id === result.case_id);
         if (!existingCase) {
-          console.log(`No existing case found for ${result.case_id} among ${this.cases.length} cases`);
           continue;
         }
         if (existingCase.type_id === this.setTypeId) {
-          console.log(`Type already set for ${result.case_id}`);
           continue;
         }
         const url = `${this.base}/update_case/${result.case_id}`;

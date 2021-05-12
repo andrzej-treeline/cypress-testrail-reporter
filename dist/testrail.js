@@ -211,11 +211,9 @@ var TestRail = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         if (!this.setTypeId) {
-                            console.log('Missing typeId');
                             return [2 /*return*/];
                         }
                         if (!this.cases || this.cases.length === 0) {
-                            console.log('Missing cases');
                             return [2 /*return*/];
                         }
                         if (!(this.setTypeId && !this.cases)) return [3 /*break*/, 4];
@@ -226,11 +224,9 @@ var TestRail = /** @class */ (function () {
                                     case 0:
                                         existingCase = this_1.cases.find(function (c) { return c.id === result.case_id; });
                                         if (!existingCase) {
-                                            console.log("No existing case found for " + result.case_id + " among " + this_1.cases.length + " cases");
                                             return [2 /*return*/, "continue"];
                                         }
                                         if (existingCase.type_id === this_1.setTypeId) {
-                                            console.log("Type already set for " + result.case_id);
                                             return [2 /*return*/, "continue"];
                                         }
                                         url = this_1.base + "/update_case/" + result.case_id;

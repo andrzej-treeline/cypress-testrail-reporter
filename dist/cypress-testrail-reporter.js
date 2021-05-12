@@ -200,16 +200,12 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                 var publishedResults, updateCases, _i, _a, _b, caseId, screenshots, caseResults, _c, screenshots_1, screenshotPath;
                 return __generator(this, function (_d) {
                     switch (_d.label) {
-                        case 0:
-                            console.log('PUBLISHING RESULTS');
-                            return [4 /*yield*/, this.testRail.publishResults(this.results)];
+                        case 0: return [4 /*yield*/, this.testRail.publishResults(this.results)];
                         case 1:
                             publishedResults = _d.sent();
-                            console.log('UPDATING TYPES');
                             return [4 /*yield*/, this.testRail.updateCasesType(this.results)];
                         case 2:
                             updateCases = _d.sent();
-                            console.log('DONE UPDATING TYPES');
                             if (!reporterOptions.uploadScreenshots) {
                                 resolve(true);
                                 return [2 /*return*/];

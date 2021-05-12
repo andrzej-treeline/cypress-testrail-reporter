@@ -161,11 +161,8 @@ export class CypressTestRailReporter extends reporters.Spec {
       }, 120 * 1000);
       // publish test cases results
       return new Promise(async resolve => {
-        console.log('PUBLISHING RESULTS');
         const publishedResults = await this.testRail.publishResults(this.results);
-        console.log('UPDATING TYPES');
         const updateCases = await this.testRail.updateCasesType(this.results);
-        console.log('DONE UPDATING TYPES');
         if (!reporterOptions.uploadScreenshots) {
           resolve(true);
           return;
