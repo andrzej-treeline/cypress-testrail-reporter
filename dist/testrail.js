@@ -195,14 +195,29 @@ var TestRail = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!(this.setTypeId && this.cases)) return [3 /*break*/, 4];
+                        if (!this.setTypeId) {
+                            console.log('Missing typeId');
+                            return [2 /*return*/];
+                        }
+                        if (!this.cases || this.cases.length === 0) {
+                            console.log('Missing cases');
+                            return [2 /*return*/];
+                        }
+                        if (!(this.setTypeId && !this.cases)) return [3 /*break*/, 4];
                         _loop_1 = function (result) {
                             var existingCase, url, response;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         existingCase = this_1.cases.find(function (c) { return c.id === result.case_id; });
-                                        if (!(existingCase && existingCase.type_id !== this_1.setTypeId)) return [3 /*break*/, 2];
+                                        if (!existingCase) {
+                                            console.log("No existing case found for " + result.case_id + " among " + this_1.cases.length + " cases");
+                                            return [2 /*return*/, "continue"];
+                                        }
+                                        if (existingCase.type_id === this_1.setTypeId) {
+                                            console.log("Type already set for " + result.case_id);
+                                            return [2 /*return*/, "continue"];
+                                        }
                                         url = this_1.base + "/update_case/" + result.case_id;
                                         return [4 /*yield*/, this_1.fetchWithAuth(url, {
                                                 method: 'POST',
@@ -212,8 +227,7 @@ var TestRail = /** @class */ (function () {
                                             })];
                                     case 1:
                                         response = _a.sent();
-                                        _a.label = 2;
-                                    case 2: return [2 /*return*/];
+                                        return [2 /*return*/];
                                 }
                             });
                         };
@@ -366,9 +380,6 @@ var TestRail = /** @class */ (function () {
                         return [4 /*yield*/, this.getRunId()];
                     case 3:
                         _c.apply(_b, _d.concat([_e + _g.apply(_f, [_h + (_j.sent())]), '\n']));
-                        return [4 /*yield*/, this.updateCasesType(results)];
-                    case 4:
-                        _j.sent();
                         return [2 /*return*/, response.json()];
                 }
             });

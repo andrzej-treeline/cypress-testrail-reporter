@@ -91,15 +91,18 @@ var formatError = function (_a) {
     if (message) {
         output += "**Error**: " + message + "\n";
     }
+    var maxLines = 50;
+    var maxString = 255 * 50;
+    var truncatedSuffix = '(...truncated)';
     if (actual) {
         var lines = actual.split('\n');
-        var text = "" + lines.slice(0, 50).map(function (line) { return "    " + line; }).join('\n') + (lines.length > 50 ? '(...truncated)' : '');
-        output += "---\n**Actual**\n" + text + "\n\n";
+        var text = "" + lines.slice(0, maxLines).map(function (line) { return "    " + line; }).join('\n') + (lines.length > maxLines ? truncatedSuffix : '');
+        output += "---\n**Actual**\n" + (text.length > maxString ? "" + text.substring(0, maxString) + truncatedSuffix : text) + "\n\n";
     }
     if (expected) {
         var lines = expected.split('\n');
-        var text = "" + lines.slice(0, 50).map(function (line) { return "    " + line; }).join('\n') + (lines.length > 50 ? '(...truncated)' : '');
-        output += "---\n**Expected**\n" + text + "\n\n";
+        var text = "" + lines.slice(0, maxLines).map(function (line) { return "    " + line; }).join('\n') + (lines.length > maxLines ? truncatedSuffix : '');
+        output += "---\n**Expected**\n" + (text.length > maxString ? "" + text.substring(0, maxString) + truncatedSuffix : text) + "\n\n";
     }
     return output;
 };
@@ -194,43 +197,50 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
             }, 120 * 1000);
             // publish test cases results
             return new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
-                var results, _i, _a, _b, caseId, screenshots, caseResults, _c, screenshots_1, screenshotPath;
+                var publishedResults, updateCases, _i, _a, _b, caseId, screenshots, caseResults, _c, screenshots_1, screenshotPath;
                 return __generator(this, function (_d) {
                     switch (_d.label) {
-                        case 0: return [4 /*yield*/, this.testRail.publishResults(this.results)];
+                        case 0:
+                            console.log('PUBLISHING RESULTS');
+                            return [4 /*yield*/, this.testRail.publishResults(this.results)];
                         case 1:
-                            results = _d.sent();
+                            publishedResults = _d.sent();
+                            console.log('UPDATING TYPES');
+                            return [4 /*yield*/, this.testRail.updateCasesType(this.results)];
+                        case 2:
+                            updateCases = _d.sent();
+                            console.log('DONE UPDATING TYPES');
                             if (!reporterOptions.uploadScreenshots) {
                                 resolve(true);
                                 return [2 /*return*/];
                             }
                             _i = 0, _a = Object.entries(this.screenshots);
-                            _d.label = 2;
-                        case 2:
-                            if (!(_i < _a.length)) return [3 /*break*/, 8];
+                            _d.label = 3;
+                        case 3:
+                            if (!(_i < _a.length)) return [3 /*break*/, 9];
                             _b = _a[_i], caseId = _b[0], screenshots = _b[1];
                             return [4 /*yield*/, this.testRail.getResultsForCase(Number(caseId))];
-                        case 3:
+                        case 4:
                             caseResults = _d.sent();
                             if (!caseResults || caseResults.length < 1 || !screenshots || screenshots.length < 1) {
-                                return [3 /*break*/, 7];
+                                return [3 /*break*/, 8];
                             }
                             _c = 0, screenshots_1 = screenshots;
-                            _d.label = 4;
-                        case 4:
-                            if (!(_c < screenshots_1.length)) return [3 /*break*/, 7];
+                            _d.label = 5;
+                        case 5:
+                            if (!(_c < screenshots_1.length)) return [3 /*break*/, 8];
                             screenshotPath = screenshots_1[_c];
                             return [4 /*yield*/, this.testRail.addAttachmentToResult(caseResults[0].id, screenshotPath)];
-                        case 5:
-                            _d.sent();
-                            _d.label = 6;
                         case 6:
-                            _c++;
-                            return [3 /*break*/, 4];
+                            _d.sent();
+                            _d.label = 7;
                         case 7:
-                            _i++;
-                            return [3 /*break*/, 2];
+                            _c++;
+                            return [3 /*break*/, 5];
                         case 8:
+                            _i++;
+                            return [3 /*break*/, 3];
+                        case 9:
                             resolve(true);
                             return [2 /*return*/];
                     }

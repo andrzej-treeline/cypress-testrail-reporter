@@ -30,15 +30,18 @@ const formatError = ({ message, actual, expected }) => {
   if (message) {
     output += `**Error**: ${message}\n`
   }
+  const maxLines = 50;
+  const maxString = 255*50;
+  const truncatedSuffix = '(...truncated)';
   if (actual) {
     const lines = actual.split('\n');
-    const text = `${lines.slice(0,50).map(line => `    ${line}`).join('\n')}${lines.length > 50 ? '(...truncated)' : ''}`;
-    output += `---\n**Actual**\n${text}\n\n`;
+    const text = `${lines.slice(0, maxLines).map(line => `    ${line}`).join('\n')}${lines.length > maxLines ? truncatedSuffix : ''}`;
+    output += `---\n**Actual**\n${text.length > maxString ? `${text.substring(0, maxString)}${truncatedSuffix}` : text}\n\n`;
   }
   if (expected) {
     const lines = expected.split('\n');
-    const text = `${lines.slice(0,50).map(line => `    ${line}`).join('\n')}${lines.length > 50 ? '(...truncated)' : ''}`;
-    output += `---\n**Expected**\n${text}\n\n`;
+    const text = `${lines.slice(0, maxLines).map(line => `    ${line}`).join('\n')}${lines.length > maxLines ? truncatedSuffix : ''}`;
+    output += `---\n**Expected**\n${text.length > maxString ? `${text.substring(0, maxString)}${truncatedSuffix}` : text}\n\n`;
   }
   return output;
 };
@@ -158,7 +161,11 @@ export class CypressTestRailReporter extends reporters.Spec {
       }, 120 * 1000);
       // publish test cases results
       return new Promise(async resolve => {
-        const results = await this.testRail.publishResults(this.results);
+        console.log('PUBLISHING RESULTS');
+        const publishedResults = await this.testRail.publishResults(this.results);
+        console.log('UPDATING TYPES');
+        const updateCases = await this.testRail.updateCasesType(this.results);
+        console.log('DONE UPDATING TYPES');
         if (!reporterOptions.uploadScreenshots) {
           resolve(true);
           return;
