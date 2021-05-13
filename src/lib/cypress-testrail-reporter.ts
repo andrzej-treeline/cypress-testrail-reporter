@@ -123,6 +123,11 @@ export class CypressTestRailReporter extends reporters.Spec {
     });
 
     runner.on('fail', test => {
+      if (reporterOptions.processExit && test && test.err && test.err.message && /TERMINATE-CYPRESS-RUN/.test(test.err.message)) {
+        console.error('Captured error with string TERMINATE-CYPRESS-RUN. Forecfully terminating process.');
+        process.exit(1);
+        return;
+      }
       const caseIds = titleToCaseIds(test.title);
       if (caseIds.length > 0) {
         if (reporterOptions.uploadScreenshots) {

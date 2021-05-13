@@ -66,7 +66,7 @@ it("Can authenticate a valid userC123", ...
 
 **setType**: _string_ (optional: default is disabled) will change the type of test case to the one with specified string e.g. `"setType": "Automated"`
 
-**processExit**: _bool_ (optional: default is true) will exit process when reporting is done. disable Cypress forcefully terminating with `--no-exit` option to make sure async uploading of results is completed.
+**processExit**: _bool_ (optional: default is true) will exit process if tests throw error with `TERMINATE-CYPRESS-RUN` string
 
 ## TestRail Settings
 

@@ -170,6 +170,11 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         });
         runner.on('fail', function (test) {
             var _a;
+            if (reporterOptions.processExit && test && test.err && test.err.message && /TERMINATE-CYPRESS-RUN/.test(test.err.message)) {
+                console.error('Captured error with string TERMINATE-CYPRESS-RUN. Forecfully terminating process.');
+                process.exit(1);
+                return;
+            }
             var caseIds = shared_1.titleToCaseIds(test.title);
             if (caseIds.length > 0) {
                 if (reporterOptions.uploadScreenshots) {
